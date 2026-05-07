@@ -119,19 +119,20 @@ class BesteSchuleClient:
         student_id: int,
         year_week: str,  # e.g. "2024-19"
         include: Iterable[str] = ("days.lessons",),
-    ) -> list[dict]:
+    ) -> Any:
         """Fetch journal data for a specific ISO week."""
         # The user's example URL was:
         # https://beste.schule/web/journal/weeks/2026-19?include=days.lessons&filter[student]=543226&interpolate=true
         # Our _base is typically https://beste.schule/api
         # If the web/ prefix is needed, we might need to adjust the path.
         # But usually API endpoints follow a pattern.
-        return await self._list(
+        body = await self._get(
             f"journal/weeks/{year_week}",
             filter={"student": student_id},
             include=",".join(include),
             interpolate="true",
         )
+        return body.get("data") if isinstance(body, dict) else body
 
 
 def _stringify(v: Any) -> str:

@@ -122,7 +122,14 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
                 # journal_week returns a list of week objects (usually one since we specify the week in path)
                 # Each week has a 'days' list.
-                weeks = await self.client.journal_week(self._student_id, year_week)
+                result = await self.client.journal_week(self._student_id, year_week)
+                if isinstance(result, list):
+                    weeks = result
+                elif isinstance(result, dict):
+                    weeks = [result]
+                else:
+                    weeks = []
+
                 for w in weeks:
                     days = w.get("days") or []
                     journal_days.extend(days)
