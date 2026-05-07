@@ -56,10 +56,9 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Per-entry coordinator. One per child."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        scan_hours = (
-            entry.options.get(CONF_SCAN_INTERVAL_HOURS)
-            or entry.data.get(CONF_SCAN_INTERVAL_HOURS)
-            or DEFAULT_SCAN_INTERVAL_HOURS
+        scan_hours = entry.options.get(
+            CONF_SCAN_INTERVAL_HOURS,
+            entry.data.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS),
         )
         super().__init__(
             hass,
@@ -107,10 +106,11 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             finals = await self.client.finalgrades(
                 self._student_id, interval_id=self._interval_id or None
             )
-            lookback = (
-                self.entry.options.get(CONF_JOURNAL_LOOKBACK_DAYS)
-                or self.entry.data.get(CONF_JOURNAL_LOOKBACK_DAYS)
-                or DEFAULT_JOURNAL_LOOKBACK_DAYS
+            lookback = self.entry.options.get(
+                CONF_JOURNAL_LOOKBACK_DAYS,
+                self.entry.data.get(
+                    CONF_JOURNAL_LOOKBACK_DAYS, DEFAULT_JOURNAL_LOOKBACK_DAYS
+                ),
             )
             journal: list[dict] = []
             if lookback > 0:

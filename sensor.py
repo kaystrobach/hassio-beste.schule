@@ -65,6 +65,7 @@ def _grades_state(data: dict) -> int:
 def _grades_attrs(data: dict) -> dict:
     grades = data.get(DATA_GRADES) or []
     fetched_at: datetime = data[DATA_FETCHED_AT]
+    avg = data.get(DATA_AVERAGE)
     return {
         "markdown": grades_to_markdown(
             grades,
@@ -72,11 +73,7 @@ def _grades_attrs(data: dict) -> dict:
             fetched_at=fetched_at.astimezone(),
         ),
         "grades": [grade_signature(g) for g in grades],
-        "average": (
-            round(data[DATA_AVERAGE], 2)
-            if data.get(DATA_AVERAGE) is not None
-            else None
-        ),
+        "average": round(avg, 2) if avg is not None else None,
         "updated_at": fetched_at.isoformat(),
     }
 

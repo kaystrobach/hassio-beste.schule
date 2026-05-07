@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "token": {
+        "description": "Geben Sie Ihren Personal Access Token von beste.schule ein. Diesen finden Sie in Ihrem Benutzerkonto unter dem Reiter API.",
+        "data": {
+          "access_token": "Access Token"
+        }
+      },
+      "student": {
+        "description": "Der Token sieht mehrere Schüler. Welchen soll diese Integration überwachen?",
+        "data": {
+          "student_id": "Schüler"
+        }
+      },
+      "reauth_confirm": {
+        "description": "Ihr Access Token scheint ungültig zu sein. Bitte geben Sie einen neuen ein.",
+        "data": {
+          "access_token": "Access Token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur API fehlgeschlagen.",
+      "invalid_auth": "Ungültiger Access Token.",
+      "no_students": "Keine Schüler für diesen Token gefunden.",
+      "unknown_student": "Der gewählte Schüler ist unbekannt."
+    },
+    "abort": {
+      "already_configured": "Dieser Schüler ist bereits konfiguriert.",
+      "reauth_successful": "Die Re-Authentifizierung war erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval_hours": "Aktualisierung alle (Stunden)",
+          "journal_lookback_days": "Klassenbuch-Rückschau (Tage)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "grades": {
+        "name": "Noten"
+      },
+      "average": {
+        "name": "Gesamtdurchschnitt"
+      },
+      "finalgrades": {
+        "name": "Endnoten"
+      },
+      "journal": {
+        "name": "Klassenbuch"
+      },
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      }
+    }
+  }
+}
