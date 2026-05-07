@@ -119,13 +119,7 @@ class BesteSchuleClient:
         student_id: int,
         date_from: str | None = None,
         date_to: str | None = None,
-        include: Iterable[str] = (
-            "lessons",
-            "lessons.subject",
-            "lessons.teachers",
-            "lessons.notes",
-            "notes",
-        ),
+        include: Iterable[str] = ("lessons", "notes"),
     ) -> list[dict]:
         flt: dict[str, Any] = {"student": student_id}
         if date_from and date_to:
