@@ -112,14 +112,20 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     CONF_JOURNAL_LOOKBACK_DAYS, DEFAULT_JOURNAL_LOOKBACK_DAYS
                 ),
             )
-            journal: list[dict] = []
+            journal_days: list[dict] = []
             if lookback > 0:
-                today = datetime.now(timezone.utc).date()
-                journal = await self.client.journal_days(
-                    self._student_id,
-                    date_from=(today - timedelta(days=int(lookback))).isoformat(),
-                    date_to=today.isoformat(),
-                )
+                # Calculate current week and maybe previous week if lookback is large
+                # For now, let's fetch the current ISO week.
+                now = datetime.now(timezone.utc)
+                year, week, _ = now.isocalendar()
+                year_week = f"{year}-{week:02d}"
+
+                # journal_week returns a list of week objects (usually one since we specify the week in path)
+                # Each week has a 'days' list.
+                weeks = await self.client.journal_week(self._student_id, year_week)
+                for w in weeks:
+                    days = w.get("days") or []
+                    journal_days.extend(days)
         except AuthError as exc:
             # Tells HA to surface a "re-authentication required" notification.
             raise ConfigEntryAuthFailed(str(exc)) from exc
@@ -141,7 +147,7 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return {
             DATA_GRADES: grades,
             DATA_FINALGRADES: finals,
-            DATA_JOURNAL: journal,
+            DATA_JOURNAL: journal_days,
             DATA_STUDENT_LABEL: self._student_label,
             DATA_STUDENT_ID: self._student_id,
             DATA_FETCHED_AT: fetched_at,

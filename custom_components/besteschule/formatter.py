@@ -36,7 +36,8 @@ def _collection_label(g: dict) -> str:
 
 
 def _given_at(g: dict) -> str:
-    return (g.get("given_at") or "")[:10]
+    # Some API responses might have 'given_at' directly, others might have it differently.
+    return (g.get("given_at") or g.get("date") or "")[:10]
 
 
 # ---------- grades --------------------------------------------------------
@@ -139,6 +140,7 @@ def journal_to_markdown(
     max_entries: int = 50,
 ) -> str:
     # Sort newest first.
+    # The 'days' here come from journal/weeks/{year-week} which has 'date' field.
     days = sorted(days, key=lambda d: d.get("date") or "", reverse=True)
     lines = [
         f"## Klassenbuch — {student_label}",
@@ -152,15 +154,22 @@ def journal_to_markdown(
     shown = 0
     for d in days:
         date = d.get("date", "")
+        # Day-level notes might be present in the new structure too.
+        day_notes = d.get("notes") or []
+        lessons = d.get("lessons") or []
+
+        if not day_notes and not lessons:
+            continue
+
         lines.append(f"### {date}")
         # Day-level notes.
-        for n in d.get("notes") or []:
+        for n in day_notes:
             text = (n.get("note") or n.get("text") or "").strip()
             if text:
                 lines.append(f"- 📌 {_md_escape(text)}")
                 shown += 1
         # Lessons (each one usually has subject + maybe notes).
-        for lesson in d.get("lessons") or []:
+        for lesson in lessons:
             subj = ((lesson.get("subject") or {}).get("name")) or "—"
             nr = lesson.get("nr") or ""
             status = lesson.get("status") or ""

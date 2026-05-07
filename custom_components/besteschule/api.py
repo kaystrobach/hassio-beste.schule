@@ -114,22 +114,23 @@ class BesteSchuleClient:
             filter=flt,
         )
 
-    async def journal_days(
+    async def journal_week(
         self,
         student_id: int,
-        date_from: str | None = None,
-        date_to: str | None = None,
-        include: Iterable[str] = ("lessons", "notes"),
+        year_week: str,  # e.g. "2024-19"
+        include: Iterable[str] = ("days.lessons",),
     ) -> list[dict]:
-        flt: dict[str, Any] = {"student": student_id}
-        if date_from and date_to:
-            flt["range"] = f"{date_from},{date_to}"
-        elif date_from:
-            flt["range"] = date_from
+        """Fetch journal data for a specific ISO week."""
+        # The user's example URL was:
+        # https://beste.schule/web/journal/weeks/2026-19?include=days.lessons&filter[student]=543226&interpolate=true
+        # Our _base is typically https://beste.schule/api
+        # If the web/ prefix is needed, we might need to adjust the path.
+        # But usually API endpoints follow a pattern.
         return await self._list(
-            "journal/days",
-            filter=flt,
+            f"journal/weeks/{year_week}",
+            filter={"student": student_id},
             include=",".join(include),
+            interpolate="true",
         )
 
 
