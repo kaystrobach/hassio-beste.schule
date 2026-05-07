@@ -1,0 +1,12 @@
+{
+  "domain": "bestschule",
+  "name": "beste.schule",
+  "version": "0.1.0",
+  "codeowners": ["@yourname"],
+  "config_flow": true,
+  "documentation": "https://github.com/yourname/ha-bestschule",
+  "issue_tracker": "https://github.com/yourname/ha-bestschule/issues",
+  "iot_class": "cloud_polling",
+  "integration_type": "service",
+  "requirements": []
+}

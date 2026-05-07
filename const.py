@@ -1,0 +1,33 @@
+"""Constants for the beste.schule integration."""
+from __future__ import annotations
+
+DOMAIN = "bestschule"
+
+# Config / option keys
+CONF_ACCESS_TOKEN = "access_token"
+CONF_STUDENT_ID = "student_id"
+CONF_STUDENT_NAME = "student_name"
+CONF_INTERVAL_ID = "interval_id"
+CONF_SCAN_INTERVAL_HOURS = "scan_interval_hours"
+CONF_JOURNAL_LOOKBACK_DAYS = "journal_lookback_days"
+
+# Defaults
+DEFAULT_SCAN_INTERVAL_HOURS = 24
+DEFAULT_JOURNAL_LOOKBACK_DAYS = 14
+MIN_SCAN_INTERVAL_HOURS = 1
+MAX_SCAN_INTERVAL_HOURS = 168  # one week
+
+# Event names fired on hass.bus when grades change
+EVENT_GRADE_ADDED = "bestschule_grade_added"
+EVENT_GRADE_CHANGED = "bestschule_grade_changed"
+EVENT_GRADE_REMOVED = "bestschule_grade_removed"
+EVENT_GRADES_UPDATED = "bestschule_grades_updated"  # roll-up summary
+
+# Coordinator data keys (returned by _async_update_data)
+DATA_GRADES = "grades"
+DATA_FINALGRADES = "finalgrades"
+DATA_JOURNAL = "journal_days"
+DATA_STUDENT_LABEL = "student_label"
+DATA_STUDENT_ID = "student_id"
+DATA_FETCHED_AT = "fetched_at"
+DATA_AVERAGE = "average"
