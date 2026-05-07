@@ -105,7 +105,7 @@ class BesteSchuleClient:
         self,
         student_id: int,
         interval_id: int | None = None,
-        include: Iterable[str] = ("subject", "interval", "teacher"),
+        include: Iterable[str] = ("interval",),
     ) -> list[dict]:
         flt: dict[str, Any] = {"student": student_id}
         if interval_id:
