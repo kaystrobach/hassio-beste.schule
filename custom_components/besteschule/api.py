@@ -93,7 +93,7 @@ class BesteSchuleClient:
     async def grades(
         self,
         student_id: int,
-        include: Iterable[str] = ("subject", "teacher", "collection"),
+        include: Iterable[str] = ("teacher", "collection"),
     ) -> list[dict]:
         return await self._list(
             "grades",
