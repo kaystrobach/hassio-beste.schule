@@ -5,7 +5,7 @@ Each ConfigEntry creates one coordinator instance. The coordinator:
   * Polls the API on a schedule (default 24h).
   * Diffs grades against the previous snapshot stored in HA's persistent
     Storage helper.
-  * Fires `bestschule_grade_added/changed/removed/...` events on the HA
+  * Fires `besteschule_grade_added/changed/removed/...` events on the HA
     bus when something differs.
   * Returns a `data` dict that the sensor entities read from.
 """
@@ -22,7 +22,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from custom_components.bestschule.api import AuthError, BesteSchuleClient, BesteSchuleError
+from .api import AuthError, BesteSchuleClient, BesteSchuleError
 from .const import (
     CONF_ACCESS_TOKEN,
     CONF_INTERVAL_ID,

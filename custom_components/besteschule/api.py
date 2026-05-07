@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 
 BASE_URL = "https://beste.schule/api"
 TIMEOUT = aiohttp.ClientTimeout(total=30)
-USER_AGENT = "ha-bestschule/0.1"
+USER_AGENT = "ha-besteschule/0.1"
 
 
 class BesteSchuleError(Exception):

@@ -11,7 +11,7 @@ Per ConfigEntry we create:
 The big payloads (markdown table, raw lists) live in entity attributes
 so the sensor `state` itself stays a small scalar that HA is happy to
 log and graph. Markdown card pulls them out via
-`{{ state_attr('sensor.bestschule_<child>_grades', 'markdown') }}`.
+`{{ state_attr('sensor.besteschule_<child>_grades', 'markdown') }}`.
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.bestschule.const import (
+from .const import (
     DATA_AVERAGE,
     DATA_FETCHED_AT,
     DATA_FINALGRADES,
@@ -41,9 +41,9 @@ from custom_components.bestschule.const import (
     DATA_STUDENT_LABEL,
     DOMAIN,
 )
-from custom_components.bestschule.coordinator import BesteSchuleCoordinator
-from custom_components.bestschule.diff import grade_signature
-from custom_components.bestschule.formatter import (
+from .coordinator import BesteSchuleCoordinator
+from .diff import grade_signature
+from .formatter import (
     finalgrades_to_markdown,
     grades_to_markdown,
     journal_to_markdown,

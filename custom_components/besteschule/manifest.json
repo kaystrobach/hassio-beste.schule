@@ -1,5 +1,5 @@
 {
-  "domain": "bestschule",
+  "domain": "besteschule",
   "name": "beste.schule",
   "version": "0.1.0",
   "codeowners": [],
@@ -8,5 +8,6 @@
   "issue_tracker": "https://github.com/kaystrobach/hassio-beste.schule/issues",
   "iot_class": "cloud_polling",
   "integration_type": "service",
+  "loggers": ["custom_components.besteschule"],
   "requirements": ["voluptuous"]
 }

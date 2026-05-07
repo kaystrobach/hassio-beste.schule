@@ -1,7 +1,7 @@
 """Constants for the beste.schule integration."""
 from __future__ import annotations
 
-DOMAIN = "bestschule"
+DOMAIN = "besteschule"
 
 # Config / option keys
 CONF_ACCESS_TOKEN = "access_token"
@@ -18,10 +18,10 @@ MIN_SCAN_INTERVAL_HOURS = 1
 MAX_SCAN_INTERVAL_HOURS = 168  # one week
 
 # Event names fired on hass.bus when grades change
-EVENT_GRADE_ADDED = "bestschule_grade_added"
-EVENT_GRADE_CHANGED = "bestschule_grade_changed"
-EVENT_GRADE_REMOVED = "bestschule_grade_removed"
-EVENT_GRADES_UPDATED = "bestschule_grades_updated"  # roll-up summary
+EVENT_GRADE_ADDED = "besteschule_grade_added"
+EVENT_GRADE_CHANGED = "besteschule_grade_changed"
+EVENT_GRADE_REMOVED = "besteschule_grade_removed"
+EVENT_GRADES_UPDATED = "besteschule_grades_updated"  # roll-up summary
 
 # Coordinator data keys (returned by _async_update_data)
 DATA_GRADES = "grades"

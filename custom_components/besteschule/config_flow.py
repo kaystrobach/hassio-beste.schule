@@ -29,7 +29,7 @@ from homeassistant.config_entries import (
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from custom_components.bestschule.api import AuthError, BesteSchuleClient, BesteSchuleError
+from .api import AuthError, BesteSchuleClient, BesteSchuleError
 from .const import (
     CONF_ACCESS_TOKEN,
     CONF_INTERVAL_ID,

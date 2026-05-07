@@ -2,7 +2,7 @@
 
 These are intentionally simple. The goal is human-readable output that
 renders cleanly inside an HA Markdown card via
-`{{ state_attr('sensor.bestschule_<name>_grades', 'markdown') }}`.
+`{{ state_attr('sensor.besteschule_<name>_grades', 'markdown') }}`.
 """
 from __future__ import annotations
 

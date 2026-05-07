@@ -7,8 +7,8 @@ child and exposes:
 - Sensors with markdown-formatted **grade tables**, **final-grade
   tables** and a **journal feed** in their attributes.
 - A numeric **overall average** sensor with proper long-term statistics.
-- **Native HA events** (`bestschule_grade_added`, `..._changed`,
-  `..._removed`, `bestschule_grades_updated`) so you can build any
+- **Native HA events** (`besteschule_grade_added`, `..._changed`,
+  `..._removed`, `besteschule_grades_updated`) so you can build any
   notification automation you like.
 
 It runs inside the HA Python process — no Supervisor, so it works on HA
@@ -24,7 +24,7 @@ Core, HA Container, HA Supervised and HA OS alike.
 
 ## Install (manual)
 
-Copy `custom_components/bestschule/` into your HA `<config>/custom_components/`
+Copy `custom_components/besteschule/` into your HA `<config>/custom_components/`
 folder and restart HA. Then add the integration as above.
 
 ## Setup
@@ -53,11 +53,11 @@ a single device "beste.schule – Lina":
 
 | Entity | Native value | Attributes |
 | --- | --- | --- |
-| `sensor.bestschule_lina_noten` | grade count | `markdown`, `grades`, `average`, `updated_at` |
-| `sensor.bestschule_lina_notendurchschnitt` | numeric average | `updated_at` |
-| `sensor.bestschule_lina_endnoten` | finalgrade count | `markdown`, `finalgrades`, `updated_at` |
-| `sensor.bestschule_lina_klassenbuch` | journal entry count | `markdown`, `days`, `updated_at` |
-| `sensor.bestschule_lina_letzte_aktualisierung` | ISO timestamp | — |
+| `sensor.besteschule_lina_noten` | grade count | `markdown`, `grades`, `average`, `updated_at` |
+| `sensor.besteschule_lina_notendurchschnitt` | numeric average | `updated_at` |
+| `sensor.besteschule_lina_endnoten` | finalgrade count | `markdown`, `finalgrades`, `updated_at` |
+| `sensor.besteschule_lina_klassenbuch` | journal entry count | `markdown`, `days`, `updated_at` |
+| `sensor.besteschule_lina_letzte_aktualisierung` | ISO timestamp | — |
 
 (Entity ids are German because the entity names are; HA derives them
 from the translated names. They will follow your HA UI language.)
@@ -66,7 +66,7 @@ from the translated names. They will follow your HA UI language.)
 
 ```yaml
 type: markdown
-content: "{{ state_attr('sensor.bestschule_lina_noten', 'markdown') }}"
+content: "{{ state_attr('sensor.besteschule_lina_noten', 'markdown') }}"
 ```
 
 Same for `endnoten` and `klassenbuch`.
@@ -77,10 +77,10 @@ Fired on the HA event bus whenever the daily refresh detects a change:
 
 | Event | Payload |
 | --- | --- |
-| `bestschule_grade_added` | `entry_id`, `student_id`, `student`, plus the new grade's `subject_name`, `value`, `given_at`, `collection`, `teacher` |
-| `bestschule_grade_changed` | `entry_id`, `student_id`, `student`, `old`, `new` |
-| `bestschule_grade_removed` | `entry_id`, `student_id`, `student`, plus the removed grade's signature |
-| `bestschule_grades_updated` | `entry_id`, `student_id`, `student`, `added`, `changed`, `removed` (counts) |
+| `besteschule_grade_added` | `entry_id`, `student_id`, `student`, plus the new grade's `subject_name`, `value`, `given_at`, `collection`, `teacher` |
+| `besteschule_grade_changed` | `entry_id`, `student_id`, `student`, `old`, `new` |
+| `besteschule_grade_removed` | `entry_id`, `student_id`, `student`, plus the removed grade's signature |
+| `besteschule_grades_updated` | `entry_id`, `student_id`, `student`, `added`, `changed`, `removed` (counts) |
 
 ### Example automation
 
@@ -88,7 +88,7 @@ Fired on the HA event bus whenever the daily refresh detects a change:
 alias: "Push notification for new grades"
 trigger:
   - platform: event
-    event_type: bestschule_grade_added
+    event_type: besteschule_grade_added
 action:
   - service: notify.mobile_app_my_phone
     data:
@@ -104,7 +104,7 @@ To target a single child, filter with `event_data:`:
 ```yaml
 trigger:
   - platform: event
-    event_type: bestschule_grade_added
+    event_type: besteschule_grade_added
     event_data:
       student_id: 12345
 ```
