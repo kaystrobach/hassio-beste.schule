@@ -128,10 +128,10 @@ class BesteSchuleClient:
         ),
     ) -> list[dict]:
         flt: dict[str, Any] = {"student": student_id}
-        if date_from:
-            flt["date_from"] = date_from
-        if date_to:
-            flt["date_to"] = date_to
+        if date_from and date_to:
+            flt["range"] = f"{date_from},{date_to}"
+        elif date_from:
+            flt["range"] = date_from
         return await self._list(
             "journal/days",
             filter=flt,
