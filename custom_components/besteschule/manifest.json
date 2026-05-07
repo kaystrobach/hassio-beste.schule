@@ -2,7 +2,7 @@
   "domain": "besteschule",
   "name": "beste.schule",
   "version": "0.1.0",
-  "codeowners": [],
+  "codeowners": ["@kaystrobach"],
   "config_flow": true,
   "documentation": "https://github.com/kaystrobach/hassio-beste.schule",
   "issue_tracker": "https://github.com/kaystrobach/hassio-beste.schule/issues",
