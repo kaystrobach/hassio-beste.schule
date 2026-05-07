@@ -32,7 +32,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import (
+from custom_components.bestschule.const import (
     DATA_AVERAGE,
     DATA_FETCHED_AT,
     DATA_FINALGRADES,
@@ -41,9 +41,9 @@ from .const import (
     DATA_STUDENT_LABEL,
     DOMAIN,
 )
-from .coordinator import BesteSchuleCoordinator
-from .diff import grade_signature
-from .formatter import (
+from custom_components.bestschule.coordinator import BesteSchuleCoordinator
+from custom_components.bestschule.diff import grade_signature
+from custom_components.bestschule.formatter import (
     finalgrades_to_markdown,
     grades_to_markdown,
     journal_to_markdown,

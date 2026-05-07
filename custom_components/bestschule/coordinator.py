@@ -22,7 +22,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AuthError, BesteSchuleClient, BesteSchuleError
+from custom_components.bestschule.api import AuthError, BesteSchuleClient, BesteSchuleError
 from .const import (
     CONF_ACCESS_TOKEN,
     CONF_INTERVAL_ID,
