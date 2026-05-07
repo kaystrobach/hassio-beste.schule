@@ -105,7 +105,6 @@ class BesteSchuleClient:
         self,
         student_id: int,
         interval_id: int | None = None,
-        include: Iterable[str] = ("interval",),
     ) -> list[dict]:
         flt: dict[str, Any] = {"student": student_id}
         if interval_id:
@@ -113,7 +112,6 @@ class BesteSchuleClient:
         return await self._list(
             "finalgrades",
             filter=flt,
-            include=",".join(include),
         )
 
     async def journal_days(
