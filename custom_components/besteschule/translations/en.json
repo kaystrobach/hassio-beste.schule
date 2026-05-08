@@ -36,7 +36,9 @@
       "init": {
         "data": {
           "scan_interval_hours": "Refresh every (hours)",
-          "journal_lookback_days": "Journal lookback (days)"
+          "journal_lookback_days": "Journal lookback (days)",
+          "calendar_lookahead_weeks": "Calendar lookahead (weeks)",
+          "calendar_delete_after_days": "Calendar delete after (days)"
         }
       }
     }

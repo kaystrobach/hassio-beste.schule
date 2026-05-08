@@ -36,7 +36,9 @@
       "init": {
         "data": {
           "scan_interval_hours": "Aktualisierung alle (Stunden)",
-          "journal_lookback_days": "Klassenbuch-Rückschau (Tage)"
+          "journal_lookback_days": "Klassenbuch-Rückschau (Tage)",
+          "calendar_lookahead_weeks": "Kalender-Vorschau (Wochen)",
+          "calendar_delete_after_days": "Kalender Einträge löschen nach (Tage)"
         }
       }
     }

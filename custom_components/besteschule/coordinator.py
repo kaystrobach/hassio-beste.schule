@@ -30,6 +30,8 @@ from .const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_STUDENT_ID,
     CONF_STUDENT_NAME,
+    CONF_CALENDAR_LOOKAHEAD_WEEKS,
+    CONF_CALENDAR_DELETE_AFTER_DAYS,
     DATA_AVERAGE,
     DATA_FETCHED_AT,
     DATA_FINALGRADES,
@@ -39,6 +41,8 @@ from .const import (
     DATA_STUDENT_LABEL,
     DEFAULT_JOURNAL_LOOKBACK_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_CALENDAR_LOOKAHEAD_WEEKS,
+    DEFAULT_CALENDAR_DELETE_AFTER_DAYS,
     DOMAIN,
     EVENT_GRADES_UPDATED,
     EVENT_GRADE_ADDED,
@@ -112,27 +116,80 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     CONF_JOURNAL_LOOKBACK_DAYS, DEFAULT_JOURNAL_LOOKBACK_DAYS
                 ),
             )
+            lookahead = self.entry.options.get(
+                CONF_CALENDAR_LOOKAHEAD_WEEKS,
+                self.entry.data.get(
+                    CONF_CALENDAR_LOOKAHEAD_WEEKS, DEFAULT_CALENDAR_LOOKAHEAD_WEEKS
+                ),
+            )
+            delete_after = self.entry.options.get(
+                CONF_CALENDAR_DELETE_AFTER_DAYS,
+                self.entry.data.get(
+                    CONF_CALENDAR_DELETE_AFTER_DAYS, DEFAULT_CALENDAR_DELETE_AFTER_DAYS
+                ),
+            )
+
             journal_days: list[dict] = []
-            if lookback > 0:
-                # Calculate current week and maybe previous week if lookback is large
-                # For now, let's fetch the current ISO week.
+            if lookback > 0 or lookahead > 0:
                 now = datetime.now(timezone.utc)
+
+                # We want to fetch weeks from 'lookback' days ago up to 'lookahead' weeks from now.
+                # However, the API works by ISO weeks.
+                # To be safe, we fetch the current week, and 'lookahead' future weeks.
+                # If lookback > 7, we might need previous weeks too.
+
+                weeks_to_fetch: set[str] = set()
+
+                # Current week
                 year, week, _ = now.isocalendar()
-                year_week = f"{year}-{week:02d}"
+                weeks_to_fetch.add(f"{year}-{week:02d}")
 
-                # journal_week returns a list of week objects (usually one since we specify the week in path)
-                # Each week has a 'days' list.
-                result = await self.client.journal_week(self._student_id, year_week)
-                if isinstance(result, list):
-                    weeks = result
-                elif isinstance(result, dict):
-                    weeks = [result]
-                else:
-                    weeks = []
+                # Future weeks
+                for i in range(1, lookahead + 1):
+                    future_dt = now + timedelta(weeks=i)
+                    f_year, f_week, _ = future_dt.isocalendar()
+                    weeks_to_fetch.add(f"{f_year}-{f_week:02d}")
 
-                for w in weeks:
-                    days = w.get("days") or []
-                    journal_days.extend(days)
+                # Past weeks (if lookback is large)
+                if lookback > 7:
+                    for i in range(1, (lookback // 7) + 1):
+                        past_dt = now - timedelta(weeks=i)
+                        p_year, p_week, _ = past_dt.isocalendar()
+                        weeks_to_fetch.add(f"{p_year}-{p_week:02d}")
+
+                for yw in sorted(weeks_to_fetch):
+                    try:
+                        result = await self.client.journal_week(self._student_id, yw)
+                        if isinstance(result, list):
+                            weeks = result
+                        elif isinstance(result, dict):
+                            weeks = [result]
+                        else:
+                            weeks = []
+
+                        for w in weeks:
+                            days = w.get("days") or []
+                            journal_days.extend(days)
+                    except BesteSchuleError as exc:
+                        _LOGGER.warning("Failed to fetch journal week %s: %s", yw, exc)
+
+                # Deduplicate days by date if any
+                seen_dates = set()
+                dedup_days = []
+                for d in journal_days:
+                    dt_str = d.get("date")
+                    if dt_str not in seen_dates:
+                        dedup_days.append(d)
+                        seen_dates.add(dt_str)
+                journal_days = dedup_days
+
+                # Filter by delete_after
+                if delete_after > 0:
+                    cutoff = (now - timedelta(days=delete_after)).date()
+                    journal_days = [
+                        d for d in journal_days
+                        if not d.get("date") or datetime.strptime(d["date"], "%Y-%m-%d").date() >= cutoff
+                    ]
         except AuthError as exc:
             # Tells HA to surface a "re-authentication required" notification.
             raise ConfigEntryAuthFailed(str(exc)) from exc

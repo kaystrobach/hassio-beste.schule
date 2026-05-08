@@ -37,8 +37,12 @@ from .const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_STUDENT_ID,
     CONF_STUDENT_NAME,
+    CONF_CALENDAR_LOOKAHEAD_WEEKS,
+    CONF_CALENDAR_DELETE_AFTER_DAYS,
     DEFAULT_JOURNAL_LOOKBACK_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_CALENDAR_LOOKAHEAD_WEEKS,
+    DEFAULT_CALENDAR_DELETE_AFTER_DAYS,
     DOMAIN,
     MAX_SCAN_INTERVAL_HOURS,
     MIN_SCAN_INTERVAL_HOURS,
@@ -136,6 +140,8 @@ class BesteSchuleConfigFlow(ConfigFlow, domain=DOMAIN):
             options={
                 CONF_SCAN_INTERVAL_HOURS: DEFAULT_SCAN_INTERVAL_HOURS,
                 CONF_JOURNAL_LOOKBACK_DAYS: DEFAULT_JOURNAL_LOOKBACK_DAYS,
+                CONF_CALENDAR_LOOKAHEAD_WEEKS: DEFAULT_CALENDAR_LOOKAHEAD_WEEKS,
+                CONF_CALENDAR_DELETE_AFTER_DAYS: DEFAULT_CALENDAR_DELETE_AFTER_DAYS,
             },
         )
 
@@ -216,6 +222,20 @@ class BesteSchuleOptionsFlow(OptionsFlow):
                             DEFAULT_JOURNAL_LOOKBACK_DAYS,
                         ),
                     ): vol.All(vol.Coerce(int), vol.Range(min=0, max=90)),
+                    vol.Required(
+                        CONF_CALENDAR_LOOKAHEAD_WEEKS,
+                        default=opts.get(
+                            CONF_CALENDAR_LOOKAHEAD_WEEKS,
+                            DEFAULT_CALENDAR_LOOKAHEAD_WEEKS,
+                        ),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=4)),
+                    vol.Required(
+                        CONF_CALENDAR_DELETE_AFTER_DAYS,
+                        default=opts.get(
+                            CONF_CALENDAR_DELETE_AFTER_DAYS,
+                            DEFAULT_CALENDAR_DELETE_AFTER_DAYS,
+                        ),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=730)),
                 }
             ),
         )
