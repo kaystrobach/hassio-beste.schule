@@ -60,27 +60,13 @@ class BesteSchuleCalendar(
         now = dt_util.now()
         upcoming = []
         for e in events:
-            # Handle both date and datetime
-            e_end = e.end
-            if isinstance(e_end, date) and not isinstance(e_end, datetime):
-                # All-day events: end is date. We treat it as end of that day.
-                e_end_dt = dt_util.start_of_local_day(e_end) + timedelta(days=1)
-            else:
-                e_end_dt = e_end
-
-            if e_end_dt > now:
+            if self._event_end(e) > now:
                 upcoming.append(e)
 
         if not upcoming:
             return None
 
-        def get_start(e: CalendarEvent) -> datetime:
-            s = e.start
-            if isinstance(s, date) and not isinstance(s, datetime):
-                return dt_util.start_of_local_day(s)
-            return s
-
-        return min(upcoming, key=get_start)
+        return min(upcoming, key=self._event_start)
 
     async def async_get_events(
         self,
@@ -90,10 +76,24 @@ class BesteSchuleCalendar(
     ) -> list[CalendarEvent]:
         """Return calendar events between start_date and end_date."""
         events = self._get_events()
+        # Home Assistant passes timezone-aware datetimes for start_date and end_date
         return [
             e for e in events
-            if e.start < end_date and e.end > start_date
+            if self._event_start(e) < end_date and self._event_end(e) > start_date
         ]
+
+    def _event_start(self, event: CalendarEvent) -> datetime:
+        """Get timezone-aware start datetime."""
+        if isinstance(event.start, datetime):
+            return event.start
+        return dt_util.start_of_local_day(event.start)
+
+    def _event_end(self, event: CalendarEvent) -> datetime:
+        """Get timezone-aware end datetime."""
+        if isinstance(event.end, datetime):
+            return event.end
+        # All-day events in HA are exclusive on the end date
+        return dt_util.start_of_local_day(event.end) + timedelta(days=1)
 
     def _get_events(self) -> list[CalendarEvent]:
         """Convert journal days from coordinator into CalendarEvents."""
@@ -142,10 +142,10 @@ class BesteSchuleCalendar(
                         end_dt = dt_util.as_local(datetime.combine(dt, end_t))
                     except ValueError:
                         start_dt = dt
-                        end_dt = dt
+                        end_dt = dt + timedelta(days=1)
                 else:
                     start_dt = dt
-                    end_dt = dt
+                    end_dt = dt + timedelta(days=1)
 
                 description_parts = []
                 # Lesson notes
@@ -186,7 +186,7 @@ class BesteSchuleCalendar(
                     CalendarEvent(
                         summary=f"📌 {type_name}: {text}",
                         start=dt,
-                        end=dt,
+                        end=dt + timedelta(days=1),
                         description=text,
                     )
                 )
