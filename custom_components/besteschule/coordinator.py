@@ -60,6 +60,7 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Per-entry coordinator. One per child."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        """Initialize."""
         scan_hours = entry.options.get(
             CONF_SCAN_INTERVAL_HOURS,
             entry.data.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS),
@@ -106,10 +107,20 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._snapshot_loaded = True
 
         try:
-            grades = await self.client.grades(self._student_id)
-            finals = await self.client.finalgrades(
-                self._student_id, interval_id=self._interval_id or None
-            )
+            try:
+                grades = await self.client.grades(self._student_id)
+            except BesteSchuleError as exc:
+                _LOGGER.error("Error fetching grades: %s", exc)
+                grades = self.data.get(DATA_GRADES) or [] if self.data else []
+
+            try:
+                finals = await self.client.finalgrades(
+                    self._student_id, interval_id=self._interval_id or None
+                )
+            except BesteSchuleError as exc:
+                _LOGGER.error("Error fetching final grades: %s", exc)
+                finals = self.data.get(DATA_FINALGRADES) or [] if self.data else []
+
             lookback = self.entry.options.get(
                 CONF_JOURNAL_LOOKBACK_DAYS,
                 self.entry.data.get(
@@ -173,23 +184,28 @@ class BesteSchuleCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     except BesteSchuleError as exc:
                         _LOGGER.warning("Failed to fetch journal week %s: %s", yw, exc)
 
-                # Deduplicate days by date if any
-                seen_dates = set()
-                dedup_days = []
-                for d in journal_days:
-                    dt_str = d.get("date")
-                    if dt_str not in seen_dates:
-                        dedup_days.append(d)
-                        seen_dates.add(dt_str)
-                journal_days = dedup_days
+                if not journal_days and self.data and self.data.get(DATA_JOURNAL):
+                    journal_days = self.data.get(DATA_JOURNAL)
+                else:
+                    # Deduplicate days by date if any
+                    seen_dates = set()
+                    dedup_days = []
+                    for d in journal_days:
+                        dt_str = d.get("date")
+                        if dt_str not in seen_dates:
+                            dedup_days.append(d)
+                            seen_dates.add(dt_str)
+                    journal_days = dedup_days
 
-                # Filter by delete_after
-                if delete_after > 0:
-                    cutoff = (now - timedelta(days=delete_after)).date()
-                    journal_days = [
-                        d for d in journal_days
-                        if not d.get("date") or datetime.strptime(d["date"], "%Y-%m-%d").date() >= cutoff
-                    ]
+                    # Filter by delete_after
+                    if delete_after > 0:
+                        cutoff = (now - timedelta(days=delete_after)).date()
+                        journal_days = [
+                            d for d in journal_days
+                            if not d.get("date") or datetime.strptime(d["date"], "%Y-%m-%d").date() >= cutoff
+                        ]
+            elif self.data:
+                journal_days = self.data.get(DATA_JOURNAL) or []
         except AuthError as exc:
             # Tells HA to surface a "re-authentication required" notification.
             raise ConfigEntryAuthFailed(str(exc)) from exc

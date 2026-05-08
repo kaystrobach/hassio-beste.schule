@@ -1,7 +1,8 @@
 """Calendar platform for beste.schule integration."""
 from __future__ import annotations
 
-from datetime import datetime, time
+from datetime import date, datetime, time
+from typing import Optional, Union
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
@@ -37,7 +38,7 @@ class BesteSchuleCalendar(
         coordinator: BesteSchuleCoordinator,
         entry: ConfigEntry,
     ) -> None:
-        """Initialize the calendar."""
+        """Initialize."""
         super().__init__(coordinator)
         self._attr_name = "Klassenbuch"
         self._attr_unique_id = f"{entry.entry_id}-calendar"
@@ -50,14 +51,35 @@ class BesteSchuleCalendar(
         )
 
     @property
-    def event(self) -> CalendarEvent | None:
+    def event(self) -> Optional[CalendarEvent]:
         """Return the next upcoming event."""
         events = self._get_events()
         if not events:
             return None
         now = datetime.now()
-        upcoming = [e for e in events if e.end > now]
-        return min(upcoming, key=lambda e: e.start) if upcoming else None
+        upcoming = []
+        for e in events:
+            # Handle both date and datetime
+            e_end = e.end
+            if isinstance(e_end, date) and not isinstance(e_end, datetime):
+                # All-day events: end is date. We treat it as end of that day.
+                e_end_dt = datetime.combine(e_end, time(23, 59, 59))
+            else:
+                e_end_dt = e_end
+
+            if e_end_dt > now:
+                upcoming.append(e)
+
+        if not upcoming:
+            return None
+
+        def get_start(e: CalendarEvent) -> datetime:
+            s = e.start
+            if isinstance(s, date) and not isinstance(s, datetime):
+                return datetime.combine(s, time(0, 0))
+            return s
+
+        return min(upcoming, key=get_start)
 
     async def async_get_events(
         self,
@@ -77,6 +99,11 @@ class BesteSchuleCalendar(
         days = self.coordinator.data.get(DATA_JOURNAL) or []
         events: list[CalendarEvent] = []
 
+        status_emojis = {
+            "hold": "✅",
+            "initial": "❓",
+        }
+
         for d in days:
             date_str = d.get("date")
             if not date_str:
@@ -90,50 +117,77 @@ class BesteSchuleCalendar(
             lessons = d.get("lessons") or []
             day_notes = d.get("notes") or []
 
-            # If we have lessons, we could potentially create one event per lesson
-            # if we had times. But we don't usually have exact times in the journal.
-            # So we create one all-day event per day with all notes.
-
-            summary_parts = []
-            description_parts = []
-
-            # Day-level notes
-            for n in day_notes:
-                text = (n.get("note") or n.get("text") or "").strip()
-                if text:
-                    description_parts.append(f"📌 {text}")
-
-            # Lesson notes
-            subjects = []
+            # Create individual events for each lesson
             for lesson in lessons:
                 subj = ((lesson.get("subject") or {}).get("name")) or "—"
-                subjects.append(subj)
+                status = lesson.get("status")
+                emoji = status_emojis.get(status, "")
 
-                lesson_note_text = []
+                summary = f"{emoji} {subj}".strip()
+
+                # Extract times
+                lesson_time = lesson.get("time") or {}
+                time_from_str = lesson_time.get("from")
+                time_to_str = lesson_time.get("to")
+
+                start_dt: Union[datetime, date]
+                end_dt: Union[datetime, date]
+
+                if time_from_str and time_to_str:
+                    try:
+                        start_t = datetime.strptime(time_from_str, "%H:%M").time()
+                        end_t = datetime.strptime(time_to_str, "%H:%M").time()
+                        start_dt = datetime.combine(dt, start_t)
+                        end_dt = datetime.combine(dt, end_t)
+                    except ValueError:
+                        start_dt = dt
+                        end_dt = dt
+                else:
+                    start_dt = dt
+                    end_dt = dt
+
+                description_parts = []
+                # Lesson notes
                 for n in lesson.get("notes") or []:
                     text = (n.get("note") or n.get("text") or "").strip()
                     if text:
-                        lesson_note_text.append(text)
+                        description_parts.append(f"• {text}")
 
-                if lesson_note_text:
-                    description_parts.append(f"**{subj}**:")
-                    for lnt in lesson_note_text:
-                        description_parts.append(f"  - {lnt}")
+                # Add teacher and room if available
+                teachers = [f"{t.get('forename')} {t.get('name')}" for t in (lesson.get("teachers") or [])]
+                if teachers:
+                    description_parts.append(f"Lehrer: {', '.join(teachers)}")
 
-            if not description_parts and not subjects:
-                continue
+                rooms = [r.get("local_id") for r in (lesson.get("rooms") or []) if r.get("local_id")]
+                if rooms:
+                    description_parts.append(f"Raum: {', '.join(rooms)}")
 
-            summary = f"Journal: {', '.join(dict.fromkeys(subjects))}" if subjects else "Journal Eintrag"
-            if len(summary) > 60:
-                summary = summary[:57] + "..."
-
-            events.append(
-                CalendarEvent(
-                    summary=summary,
-                    start=dt,
-                    end=dt, # All-day events in HA have same start/end date for one day
-                    description="\n".join(description_parts),
+                events.append(
+                    CalendarEvent(
+                        summary=summary,
+                        start=start_dt,
+                        end=end_dt,
+                        description="\n".join(description_parts),
+                        location=", ".join(rooms) if rooms else None,
+                    )
                 )
-            )
+
+            # Create separate all-day events for day-level notes
+            for n in day_notes:
+                text = (n.get("description") or n.get("note") or n.get("text") or "").strip()
+                if not text:
+                    continue
+
+                # The sample JSON shows "description" for notes
+                type_name = (n.get("type") or {}).get("name") or "Notiz"
+
+                events.append(
+                    CalendarEvent(
+                        summary=f"📌 {type_name}: {text}",
+                        start=dt,
+                        end=dt,
+                        description=text,
+                    )
+                )
 
         return events
