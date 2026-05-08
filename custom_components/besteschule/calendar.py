@@ -1,7 +1,7 @@
 """Calendar platform for beste.schule integration."""
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date, datetime, timedelta, time
 from typing import Optional, Union
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .const import DATA_JOURNAL, DOMAIN
 from .coordinator import BesteSchuleCoordinator
@@ -56,14 +57,14 @@ class BesteSchuleCalendar(
         events = self._get_events()
         if not events:
             return None
-        now = datetime.now()
+        now = dt_util.now()
         upcoming = []
         for e in events:
             # Handle both date and datetime
             e_end = e.end
             if isinstance(e_end, date) and not isinstance(e_end, datetime):
                 # All-day events: end is date. We treat it as end of that day.
-                e_end_dt = datetime.combine(e_end, time(23, 59, 59))
+                e_end_dt = dt_util.start_of_local_day(e_end) + timedelta(days=1)
             else:
                 e_end_dt = e_end
 
@@ -76,7 +77,7 @@ class BesteSchuleCalendar(
         def get_start(e: CalendarEvent) -> datetime:
             s = e.start
             if isinstance(s, date) and not isinstance(s, datetime):
-                return datetime.combine(s, time(0, 0))
+                return dt_util.start_of_local_day(s)
             return s
 
         return min(upcoming, key=get_start)
@@ -137,8 +138,8 @@ class BesteSchuleCalendar(
                     try:
                         start_t = datetime.strptime(time_from_str, "%H:%M").time()
                         end_t = datetime.strptime(time_to_str, "%H:%M").time()
-                        start_dt = datetime.combine(dt, start_t)
-                        end_dt = datetime.combine(dt, end_t)
+                        start_dt = dt_util.as_local(datetime.combine(dt, start_t))
+                        end_dt = dt_util.as_local(datetime.combine(dt, end_t))
                     except ValueError:
                         start_dt = dt
                         end_dt = dt
