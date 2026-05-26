@@ -101,10 +101,10 @@ class BesteSchuleCalendar(
         events: list[CalendarEvent] = []
 
         status_emojis = {
-            "hold": "✅",
+            "hold": "🟢",
             "initial": "⚪️",
             "canceled": "🔴",
-            "planned": "",
+            "planned": "🔵",
         }
 
         for d in days:
