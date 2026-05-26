@@ -102,7 +102,9 @@ class BesteSchuleCalendar(
 
         status_emojis = {
             "hold": "✅",
-            "initial": "❓",
+            "initial": "⚪️",
+            "canceled": "🔴",
+            "planned": "",
         }
 
         for d in days:
